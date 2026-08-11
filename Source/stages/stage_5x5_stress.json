@@ -1,0 +1,470 @@
+{
+  "id": "stage_5x5_stress",
+  "grid_size": 5,
+  "characters": [
+    {
+      "id": "A1",
+      "row": 0,
+      "col": 0,
+      "name": "Abel",
+      "profession": "Guard"
+    },
+    {
+      "id": "B1",
+      "row": 0,
+      "col": 1,
+      "name": "Bea",
+      "profession": "Cook"
+    },
+    {
+      "id": "C1",
+      "row": 0,
+      "col": 2,
+      "name": "Clara",
+      "profession": "Farmer"
+    },
+    {
+      "id": "D1",
+      "row": 0,
+      "col": 3,
+      "name": "Derek",
+      "profession": "Clerk"
+    },
+    {
+      "id": "E1",
+      "row": 0,
+      "col": 4,
+      "name": "Eliza",
+      "profession": "Detective"
+    },
+    {
+      "id": "A2",
+      "row": 1,
+      "col": 0,
+      "name": "Franz",
+      "profession": "Doctor"
+    },
+    {
+      "id": "B2",
+      "row": 1,
+      "col": 1,
+      "name": "Grant",
+      "profession": "Artist"
+    },
+    {
+      "id": "C2",
+      "row": 1,
+      "col": 2,
+      "name": "Hannah",
+      "profession": "Pilot"
+    },
+    {
+      "id": "D2",
+      "row": 1,
+      "col": 3,
+      "name": "Ivy",
+      "profession": "Astronaut"
+    },
+    {
+      "id": "E2",
+      "row": 1,
+      "col": 4,
+      "name": "Jonas",
+      "profession": "Painter"
+    },
+    {
+      "id": "A3",
+      "row": 2,
+      "col": 0,
+      "name": "Karl",
+      "profession": "Guard"
+    },
+    {
+      "id": "B3",
+      "row": 2,
+      "col": 1,
+      "name": "Leo",
+      "profession": "Cook"
+    },
+    {
+      "id": "C3",
+      "row": 2,
+      "col": 2,
+      "name": "Mara",
+      "profession": "Farmer"
+    },
+    {
+      "id": "D3",
+      "row": 2,
+      "col": 3,
+      "name": "Noah",
+      "profession": "Clerk"
+    },
+    {
+      "id": "E3",
+      "row": 2,
+      "col": 4,
+      "name": "Owen",
+      "profession": "Detective"
+    },
+    {
+      "id": "A4",
+      "row": 3,
+      "col": 0,
+      "name": "Priya",
+      "profession": "Doctor"
+    },
+    {
+      "id": "B4",
+      "row": 3,
+      "col": 1,
+      "name": "Quilla",
+      "profession": "Artist"
+    },
+    {
+      "id": "C4",
+      "row": 3,
+      "col": 2,
+      "name": "Roy",
+      "profession": "Pilot"
+    },
+    {
+      "id": "D4",
+      "row": 3,
+      "col": 3,
+      "name": "Sophia",
+      "profession": "Astronaut"
+    },
+    {
+      "id": "E4",
+      "row": 3,
+      "col": 4,
+      "name": "Tom",
+      "profession": "Painter"
+    },
+    {
+      "id": "A5",
+      "row": 4,
+      "col": 0,
+      "name": "Uma",
+      "profession": "Guard"
+    },
+    {
+      "id": "B5",
+      "row": 4,
+      "col": 1,
+      "name": "Vic",
+      "profession": "Cook"
+    },
+    {
+      "id": "C5",
+      "row": 4,
+      "col": 2,
+      "name": "Wren",
+      "profession": "Farmer"
+    },
+    {
+      "id": "D5",
+      "row": 4,
+      "col": 3,
+      "name": "Xena",
+      "profession": "Clerk"
+    },
+    {
+      "id": "E5",
+      "row": 4,
+      "col": 4,
+      "name": "Yara",
+      "profession": "Detective"
+    }
+  ],
+  "solution": {
+    "A1": "CRIMINAL",
+    "B1": "CRIMINAL",
+    "C1": "INNOCENT",
+    "D1": "CRIMINAL",
+    "E1": "INNOCENT",
+    "A2": "CRIMINAL",
+    "B2": "CRIMINAL",
+    "C2": "INNOCENT",
+    "D2": "CRIMINAL",
+    "E2": "CRIMINAL",
+    "A3": "CRIMINAL",
+    "B3": "CRIMINAL",
+    "C3": "CRIMINAL",
+    "D3": "INNOCENT",
+    "E3": "CRIMINAL",
+    "A4": "CRIMINAL",
+    "B4": "INNOCENT",
+    "C4": "INNOCENT",
+    "D4": "INNOCENT",
+    "E4": "CRIMINAL",
+    "A5": "INNOCENT",
+    "B5": "CRIMINAL",
+    "C5": "INNOCENT",
+    "D5": "CRIMINAL",
+    "E5": "CRIMINAL"
+  },
+  "clues": {
+    "A1": {
+      "type": "EXACTLY",
+      "region": {
+        "kind": "row",
+        "row": 0
+      },
+      "k": 3,
+      "description": "Exactly 3 Criminal(s) in Row 1"
+    },
+    "B1": {
+      "type": "AT_MOST",
+      "region": {
+        "kind": "column",
+        "col": 1
+      },
+      "k": 4,
+      "description": "At most 4 Criminal(s) in Column B"
+    },
+    "C1": {
+      "type": "AT_LEAST",
+      "region": {
+        "kind": "neighbors",
+        "of": "C1"
+      },
+      "k": 4,
+      "description": "At least 4 Criminal(s) among C1's neighbors"
+    },
+    "D1": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "E2"
+        ]
+      },
+      "value": "CRIMINAL",
+      "description": "E2 is CRIMINAL"
+    },
+    "E1": {
+      "type": "SAME",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "E2",
+          "A1"
+        ]
+      },
+      "description": "E2 and A1 have the same status"
+    },
+    "A2": {
+      "type": "EXACTLY",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "B3",
+          "C4",
+          "D5"
+        ]
+      },
+      "k": 2,
+      "description": "Exactly 2 Criminal(s) among B3, C4, D5"
+    },
+    "B2": {
+      "type": "EXACTLY",
+      "region": {
+        "kind": "row",
+        "row": 1
+      },
+      "k": 4,
+      "description": "Exactly 4 Criminal(s) in Row 2"
+    },
+    "C2": {
+      "type": "AT_MOST",
+      "region": {
+        "kind": "column",
+        "col": 2
+      },
+      "k": 1,
+      "description": "At most 1 Criminal(s) in Column C"
+    },
+    "D2": {
+      "type": "AT_LEAST",
+      "region": {
+        "kind": "neighbors",
+        "of": "D2"
+      },
+      "k": 4,
+      "description": "At least 4 Criminal(s) among D2's neighbors"
+    },
+    "E2": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "A3"
+        ]
+      },
+      "value": "CRIMINAL",
+      "description": "A3 is CRIMINAL"
+    },
+    "A3": {
+      "type": "SAME",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "A4",
+          "B3"
+        ]
+      },
+      "description": "A4 and B3 have the same status"
+    },
+    "B3": {
+      "type": "EXACTLY",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "C4",
+          "D5",
+          "E1"
+        ]
+      },
+      "k": 1,
+      "description": "Exactly 1 Criminal(s) among C4, D5, E1"
+    },
+    "C3": {
+      "type": "EXACTLY",
+      "region": {
+        "kind": "row",
+        "row": 2
+      },
+      "k": 4,
+      "description": "Exactly 4 Criminal(s) in Row 3"
+    },
+    "D3": {
+      "type": "AT_MOST",
+      "region": {
+        "kind": "column",
+        "col": 3
+      },
+      "k": 3,
+      "description": "At most 3 Criminal(s) in Column D"
+    },
+    "E3": {
+      "type": "AT_LEAST",
+      "region": {
+        "kind": "neighbors",
+        "of": "E3"
+      },
+      "k": 3,
+      "description": "At least 3 Criminal(s) among E3's neighbors"
+    },
+    "A4": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "B5"
+        ]
+      },
+      "value": "CRIMINAL",
+      "description": "B5 is CRIMINAL"
+    },
+    "B4": {
+      "type": "DIFFERENT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "B5",
+          "C4"
+        ]
+      },
+      "description": "B5 and C4 have different status"
+    },
+    "C4": {
+      "type": "EXACTLY",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "D5",
+          "E1",
+          "A2"
+        ]
+      },
+      "k": 2,
+      "description": "Exactly 2 Criminal(s) among D5, E1, A2"
+    },
+    "D4": {
+      "type": "EXACTLY",
+      "region": {
+        "kind": "row",
+        "row": 3
+      },
+      "k": 2,
+      "description": "Exactly 2 Criminal(s) in Row 4"
+    },
+    "E4": {
+      "type": "AT_MOST",
+      "region": {
+        "kind": "column",
+        "col": 4
+      },
+      "k": 4,
+      "description": "At most 4 Criminal(s) in Column E"
+    },
+    "A5": {
+      "type": "AT_LEAST",
+      "region": {
+        "kind": "neighbors",
+        "of": "A5"
+      },
+      "k": 2,
+      "description": "At least 2 Criminal(s) among A5's neighbors"
+    },
+    "B5": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "C1"
+        ]
+      },
+      "value": "INNOCENT",
+      "description": "C1 is INNOCENT"
+    },
+    "C5": {
+      "type": "DIFFERENT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "C1",
+          "D5"
+        ]
+      },
+      "description": "C1 and D5 have different status"
+    },
+    "D5": {
+      "type": "EXACTLY",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "E1",
+          "A2",
+          "B3"
+        ]
+      },
+      "k": 2,
+      "description": "Exactly 2 Criminal(s) among E1, A2, B3"
+    },
+    "E5": {
+      "type": "EXACTLY",
+      "region": {
+        "kind": "row",
+        "row": 4
+      },
+      "k": 3,
+      "description": "Exactly 3 Criminal(s) in Row 5"
+    }
+  },
+  "initial_revealed": [
+    "A1"
+  ]
+}
