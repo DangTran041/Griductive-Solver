@@ -202,13 +202,40 @@ def handle_restart():
 
 
 def handle_hint():
-    # TODO: nối vào Logic Agent thật khi Phong xong logic/logic_agent.py
-    log_message("Hint: đang chờ Logic Agent (Phong) hoàn thiện phần suy luận.", "INFO")
+    """Xử lý sự kiện bấm nút Hint: Tìm ô có thể chứng minh được và highlight ô đó."""
+    engine = state["engine"]
+    hint_data = engine.get_hint()
+
+    if hint_data["has_hint"]:
+        pos = hint_data["pos"]
+        clear_all_highlights()
+        
+        # Đánh dấu chọn ô gợi ý trên GUI
+        state["selected_pos"] = pos
+        if pos in state["cards"]:
+            state["cards"][pos].is_selected = True
+            state["cards"][pos].update_visual()
+            
+        log_message(hint_data["message"], "ACCEPTED")
+    else:
+        log_message(hint_data["message"], "NOT_PROVABLE")
 
 
 def handle_auto_solve():
-    # TODO: nối vào Logic Agent thật khi Phong xong logic/logic_agent.py
-    log_message("Auto Solve: đang chờ Logic Agent (Phong) hoàn thiện phần suy luận.", "INFO")
+    """Xử lý sự kiện bấm nút Auto Solve: Gọi thuật toán tự động giải từng bước."""
+    engine = state["engine"]
+    clear_all_highlights()
+
+    solved_count = engine.auto_solve()
+
+    # Cập nhật hiển thị toàn bộ bài trên lưới
+    for card in state["cards"].values():
+        card.update_visual()
+
+    if solved_count > 0:
+        log_message(f"AUTO SOLVE: Đã suy luận tự động thành công {solved_count} ô!", "ACCEPTED")
+    else:
+        log_message("AUTO SOLVE: Không tìm thấy ô nào có thể suy luận thêm từ dữ kiện hiện tại.", "NOT_PROVABLE")
 
 
 # ---------------- Console UI ----------------

@@ -1,26 +1,20 @@
 """
 core/game_engine.py
 --------------------
-Game Engine cho Griductive — KHÔNG import Ursina hay bất kỳ thư viện GUI nào.
-Đây là quy tắc bắt buộc theo đề (mục 4.1): Game Engine và GUI phải tách biệt,
-để Logic Agent (Phong) có thể test độc lập mà không cần dựng cửa sổ game.
-
-Engine giữ:
-  - self.solution        : PRIVATE — đáp án thật của mọi ô. GUI/Agent không
-                            bao giờ được đọc trực tiếp field này.
-  - self.clues            : toàn bộ clue (kể cả clue của ô chưa lật)
-  - self.public_kb         : PUBLIC — chỉ chứa ô đã lật + verdict đã chứng minh.
-                            Đây là thứ duy nhất Logic Agent được phép đọc.
+Game Engine cho Griductive.
+Tích hợp LogicAgent và CNFEncoder để thực hiện suy luận logic chính xác.
 """
 
 import json
 from pathlib import Path
+from logic.cnf_encoder import CNFEncoder, _parse_cell_id
+from logic.agent import LogicAgent
 
 
 class Clue:
     def __init__(self, clue_type, target_cells, k=None, value=None, description=""):
         self.clue_type = clue_type       # FACT / SAME / DIFFERENT / EXACTLY / AT_LEAST / AT_MOST
-        self.target_cells = target_cells  # list[(row, col)] — vùng clue tham chiếu tới
+        self.target_cells = target_cells  # list[(row, col)]
         self.k = k                        # dùng cho EXACTLY/AT_LEAST/AT_MOST
         self.value = value                # dùng cho FACT (CRIMINAL/INNOCENT)
         self.description = description
@@ -30,15 +24,13 @@ class GameEngine:
     def __init__(self, grid_size=3):
         self.grid_size = grid_size
         self.characters = {}         # (row, col) -> {"name": str, "prof": str}
-        self.solution = {}           # (row, col) -> "CRIMINAL"/"INNOCENT"  [PRIVATE]
+        self.solution = {}           # (row, col) -> "CRIMINAL"/"INNOCENT" [PRIVATE]
         self.clues = {}              # (row, col) -> Clue
         self.initial_revealed = []   # list[(row, col)]
-        self.public_kb = {}          # (row, col) -> "CRIMINAL"/"INNOCENT"  [PUBLIC]
-        self.source_path = None      # ghi lại puzzle nào đang được load (để debug/hiển thị)
+        self.public_kb = {}          # (row, col) -> "CRIMINAL"/"INNOCENT" [PUBLIC]
+        self.source_path = None
+        self.raw_puzzle_data = None  # Lưu trữ dữ liệu thô để dùng cho CNFEncoder
 
-    # ------------------------------------------------------------------
-    # LOAD — đọc puzzle từ file JSON theo docs/puzzle_format.md
-    # ------------------------------------------------------------------
     @classmethod
     def from_json(cls, path):
         path = Path(path)
@@ -47,6 +39,7 @@ class GameEngine:
 
         engine = cls(grid_size=data["grid_size"])
         engine.source_path = str(path)
+        engine.raw_puzzle_data = data
 
         id_to_pos = {}
         for ch in data["characters"]:
@@ -70,11 +63,10 @@ class GameEngine:
             )
 
         engine.initial_revealed = [id_to_pos[cid] for cid in data["initial_revealed"]]
-        engine.restart()  # thiết lập public_kb ban đầu
+        engine.restart()
         return engine
 
     def _resolve_region(self, region, id_to_pos):
-        """Chuyển 1 region (row/column/neighbors/explicit) thành list toạ độ (row, col)."""
         kind = region["kind"]
         if kind == "row":
             r = region["row"]
@@ -97,17 +89,48 @@ class GameEngine:
             return [id_to_pos[cid] for cid in region["cells"]]
         raise ValueError(f"Unknown region kind: {kind}")
 
-    # ------------------------------------------------------------------
-    # RESTART — chơi lại puzzle hiện tại từ đầu, KHÔNG đổi puzzle
-    # ------------------------------------------------------------------
     def restart(self):
         self.public_kb = {}
         for pos in self.initial_revealed:
             self.public_kb[pos] = self.solution[pos]
 
-    # ------------------------------------------------------------------
-    # SUBMIT VERDICT
-    # ------------------------------------------------------------------
+    def _pos_label(self, pos):
+        r, c = pos
+        return f"{chr(ord('A') + c)}{r + 1}"
+
+    def _cid_to_pos(self, cid):
+        return _parse_cell_id(cid)
+
+    def _build_cnf_and_vars(self):
+        encoder = CNFEncoder(self.raw_puzzle_data)
+        
+        # Lấy danh sách ID các ô đã lật và trạng thái hiện tại
+        revealed_ids = [self._pos_label(pos) for pos in self.public_kb.keys()]
+        known_statuses = {self._pos_label(pos): status for pos, status in self.public_kb.items()}
+        
+        raw_clues = self.raw_puzzle_data.get("clues", {})
+        cnf, stats = encoder.encode(raw_clues, revealed_ids, known_statuses)
+        
+        var_map = stats["var_map"]                # cid -> var_id (int)
+        rev_var_map = {v: k for k, v in var_map.items()}  # var_id -> cid
+        
+        return encoder, cnf, var_map, rev_var_map
+
+    def _check_forced_status(self, pos):
+        encoder, cnf, var_map, rev_var_map = self._build_cnf_and_vars()
+        target_cid = self._pos_label(pos)
+        
+        if target_cid not in var_map:
+            return None
+
+        var_id = var_map[target_cid]
+        agent = LogicAgent()
+        verdict = agent.evaluate_cell(var_id, cnf)
+
+        if verdict in ["CRIMINAL", "INNOCENT"]:
+            return verdict
+        return None
+
     def submit_verdict(self, pos, guessed_status):
         if pos in self.public_kb:
             return "ALREADY_REVEALED", "Ô này đã được lật rồi"
@@ -129,35 +152,71 @@ class GameEngine:
         self.public_kb[pos] = forced_status
         return "ACCEPTED", f"CHÍNH XÁC!\n{self.characters[pos]['name']} là {forced_status}."
 
-    def _check_forced_status(self, pos):
-        """
-        *** STUB TẠM THỜI ***
-        Đây CHƯA phải Logic Agent thật — chỉ xử lý được clue loại FACT trỏ
-        trực tiếp tới ô đang xét, để Load/Restart/GUI chạy demo được trong
-        lúc chờ Minh (CNF Encoder) + Phong (DPLL Solver + Logic Agent) code xong.
+    def get_hint(self):
+        encoder, cnf, var_map, rev_var_map = self._build_cnf_and_vars()
+        
+        # Tìm danh sách biến của các ô CHƯA mở
+        unresolved_vars = []
+        for cid, var_id in var_map.items():
+            pos = self._cid_to_pos(cid)
+            if pos not in self.public_kb:
+                unresolved_vars.append(var_id)
 
-        Khi Phong xong logic/logic_agent.py, THAY TOÀN BỘ hàm này bằng:
-            from logic.logic_agent import LogicAgent
-            agent = LogicAgent(self.public_kb, self.clues)  # KHÔNG truyền self.solution
-            return agent.classify(pos)   # trả "CRIMINAL" / "INNOCENT" / None (UNKNOWN)
-        """
-        for revealed_pos in list(self.public_kb.keys()):
-            clue = self.clues.get(revealed_pos)
-            if clue is None:
-                continue
-            if clue.clue_type == "FACT" and pos in clue.target_cells:
-                return clue.value
-        return None
+        agent = LogicAgent()
+        target_var, verdict = agent.get_forced_verdict(unresolved_vars, cnf)
 
-    def _pos_label(self, pos):
-        r, c = pos
-        return f"{chr(ord('A') + c)}{r + 1}"
+        if target_var is not None and verdict in ["CRIMINAL", "INNOCENT"]:
+            target_cid = rev_var_map[target_var]
+            target_pos = self._cid_to_pos(target_cid)
+            char_info = self.characters.get(target_pos, {})
+            char_name = char_info.get("name", target_cid)
+            return {
+                "has_hint": True,
+                "pos": target_pos,
+                "cid": target_cid,
+                "verdict": verdict,
+                "message": f"GỢI Ý: Ô {target_cid} ({char_name}) chắc chắn phải là {verdict}!"
+            }
+        
+        return {
+            "has_hint": False,
+            "pos": None,
+            "cid": None,
+            "verdict": None,
+            "message": "GỢI Ý: Hiện chưa thể suy luận chắc chắn thêm ô nào từ các clue đã lật."
+        }
 
-    # ------------------------------------------------------------------
-    # PUBLIC KB — dùng cho Logic Agent / Experiments, không lộ solution
-    # ------------------------------------------------------------------
+    def auto_solve(self):
+        solved_count = 0
+        agent = LogicAgent()
+
+        while True:
+            encoder, cnf, var_map, rev_var_map = self._build_cnf_and_vars()
+            
+            unresolved_vars = []
+            for cid, var_id in var_map.items():
+                pos = self._cid_to_pos(cid)
+                if pos not in self.public_kb:
+                    unresolved_vars.append(var_id)
+
+            if not unresolved_vars:
+                break  # Đã mở hết tất cả các ô trên bàn cờ
+
+            target_var, verdict = agent.get_forced_verdict(unresolved_vars, cnf)
+
+            if target_var is not None and verdict in ["CRIMINAL", "INNOCENT"]:
+                target_cid = rev_var_map[target_var]
+                target_pos = self._cid_to_pos(target_cid)
+                
+                # Cập nhật phán quyết vào KB công khai
+                self.public_kb[target_pos] = verdict
+                solved_count += 1
+            else:
+                break  # Không thể suy luận thêm ô nào nữa
+
+        return solved_count
+
     def get_public_view(self):
-        """Trả về đúng những gì Logic Agent được phép thấy — không có 'solution'."""
         return {
             "grid_size": self.grid_size,
             "revealed": dict(self.public_kb),
