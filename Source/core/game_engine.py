@@ -2,7 +2,8 @@
 core/game_engine.py
 --------------------
 Game Engine cho Griductive.
-Tích hợp LogicAgent và CNFEncoder để thực hiện suy luận logic chính xác.
+Tích hợp LogicAgent và CNFEncoder để thực hiện suy luận logic chính xác,
+lưu trữ deduction trace chuẩn theo yêu cầu đồ án.
 """
 
 import json
@@ -30,6 +31,7 @@ class GameEngine:
         self.public_kb = {}          # (row, col) -> "CRIMINAL"/"INNOCENT" [PUBLIC]
         self.source_path = None
         self.raw_puzzle_data = None  # Lưu trữ dữ liệu thô để dùng cho CNFEncoder
+        self.agent = None            # Sẽ được khởi tạo trong restart()
 
     @classmethod
     def from_json(cls, path):
@@ -93,6 +95,8 @@ class GameEngine:
         self.public_kb = {}
         for pos in self.initial_revealed:
             self.public_kb[pos] = self.solution[pos]
+        # Khởi tạo và lưu trữ agent cố định cho mỗi vòng chơi
+        self.agent = LogicAgent()
 
     def _pos_label(self, pos):
         r, c = pos
@@ -124,8 +128,8 @@ class GameEngine:
             return None
 
         var_id = var_map[target_cid]
-        agent = LogicAgent()
-        verdict = agent.evaluate_cell(var_id, cnf)
+        # Dùng lại self.agent thay vì khởi tạo mới
+        verdict = self.agent.evaluate_cell(var_id, cnf)
 
         if verdict in ["CRIMINAL", "INNOCENT"]:
             return verdict
@@ -155,15 +159,14 @@ class GameEngine:
     def get_hint(self):
         encoder, cnf, var_map, rev_var_map = self._build_cnf_and_vars()
         
-        # Tìm danh sách biến của các ô CHƯA mở
         unresolved_vars = []
         for cid, var_id in var_map.items():
             pos = self._cid_to_pos(cid)
             if pos not in self.public_kb:
                 unresolved_vars.append(var_id)
 
-        agent = LogicAgent()
-        target_var, verdict = agent.get_forced_verdict(unresolved_vars, cnf)
+        # Gọi agent có sẵn nhưng truyền record_trace=False để không làm rác log
+        target_var, verdict = self.agent.get_forced_verdict(unresolved_vars, cnf, record_trace=False)
 
         if target_var is not None and verdict in ["CRIMINAL", "INNOCENT"]:
             target_cid = rev_var_map[target_var]
@@ -188,10 +191,12 @@ class GameEngine:
 
     def auto_solve(self):
         solved_count = 0
-        agent = LogicAgent()
 
         while True:
             encoder, cnf, var_map, rev_var_map = self._build_cnf_and_vars()
+            
+            # Lấy danh sách các clue đang mở để truyền vào Trace
+            active_clues = [self._pos_label(pos) for pos in self.public_kb.keys()]
             
             unresolved_vars = []
             for cid, var_id in var_map.items():
@@ -202,7 +207,10 @@ class GameEngine:
             if not unresolved_vars:
                 break  # Đã mở hết tất cả các ô trên bàn cờ
 
-            target_var, verdict = agent.get_forced_verdict(unresolved_vars, cnf)
+            # Kích hoạt record_trace=True để lưu log
+            target_var, verdict = self.agent.get_forced_verdict(
+                unresolved_vars, cnf, active_clues=active_clues, record_trace=True
+            )
 
             if target_var is not None and verdict in ["CRIMINAL", "INNOCENT"]:
                 target_cid = rev_var_map[target_var]
@@ -211,6 +219,11 @@ class GameEngine:
                 # Cập nhật phán quyết vào KB công khai
                 self.public_kb[target_pos] = verdict
                 solved_count += 1
+                
+                # Bổ sung thông tin clue mới lật vào Trace
+                new_clue = self.clues.get(target_pos)
+                new_clue_desc = new_clue.description if new_clue else "Không có nội dung clue"
+                self.agent.update_latest_revealed_clue(f"{target_cid} -> {new_clue_desc}")
             else:
                 break  # Không thể suy luận thêm ô nào nữa
 
