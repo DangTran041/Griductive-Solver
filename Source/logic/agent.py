@@ -1,59 +1,65 @@
+"""
+logic/agent.py
+--------------
+Deductive Logic Agent cho Griductive.
+Chịu trách nhiệm phân loại chứng minh bằng phản chứng và ghi log deduction trace chuẩn xác.
+"""
+
 from logic.dpll import DPLLSolver
+from typing import List, Tuple, Optional, Any, Dict
+
 
 class LogicAgent:
     def __init__(self):
         self.solver = DPLLSolver()
-        self.deduction_trace = [] # Chứa chuỗi hành động để xuất ra report
+        self.deduction_trace: List[Dict[str, Any]] = []
         self.step_counter = 0
 
-    def evaluate_cell(self, cell_var, current_cnf):
-        """
-        Phụ trách: Phân loại tính đúng sai của một nhân vật bằng phương pháp phản chứng.
-        cell_var: Số nguyên định danh cho nhân vật (Do hàm của Minh cung cấp).
-        """
-        # Phản chứng 1: Giả sử người này VÔ TỘI (~C_i)
-        assume_innocent_cnf = current_cnf + [[-cell_var]]
-        is_sat_innocent, _ = self.solver.solve(assume_innocent_cnf)
-        
-        # Phản chứng 2: Giả sử người này LÀ TỘI PHẠM (C_i)
+    def evaluate_cell(self, cell_var: int, current_cnf: List[List[int]]) -> str:
+        """Chứng minh thân phận bằng phản chứng."""
         assume_criminal_cnf = current_cnf + [[cell_var]]
-        is_sat_criminal, _ = self.solver.solve(assume_criminal_cnf)
+        sat_under_criminal, _ = self.solver.solve(assume_criminal_cnf)
 
-        # Rút ra kết luận dựa trên luật của đồ án:
-        if not is_sat_innocent and is_sat_criminal:
-            return "CRIMINAL" # Vô tội là sai -> Chắc chắn là Tội phạm
-        elif is_sat_innocent and not is_sat_criminal:
-            return "INNOCENT" # Tội phạm là sai -> Chắc chắn Vô tội
-        elif not is_sat_innocent and not is_sat_criminal:
-            return "INCONSISTENT" # Cơ sở tri thức bị lỗi/mâu thuẫn
+        assume_innocent_cnf = current_cnf + [[-cell_var]]
+        sat_under_innocent, _ = self.solver.solve(assume_innocent_cnf)
+
+        if not sat_under_innocent and sat_under_criminal:
+            return "CRIMINAL"  
+        elif not sat_under_criminal and sat_under_innocent:
+            return "INNOCENT"  
+        elif not sat_under_criminal and not sat_under_innocent:
+            return "INCONSISTENT"  
         else:
-            return "UNKNOWN" # Cả hai đều có khả năng -> Không được đoán
+            return "UNKNOWN"  
 
-    def get_forced_verdict(self, unresolved_cells, current_cnf):
-        """
-        Phụ trách: Duyệt qua các ô chưa mở để tìm ra 1 phán quyết "chắc chắn đúng" tiếp theo.
-        unresolved_cells: List các biến đại diện cho các thẻ úp (Ví dụ: [1, 2, 4, 5])
-        """
-        for var_id in unresolved_cells:
+    def get_forced_verdict(self, unresolved_vars: List[int], current_cnf: List[List[int]], 
+                           active_clues: Optional[List[str]] = None, 
+                           record_trace: bool = False) -> Tuple[Optional[int], str]:
+        """Duyệt qua các ô chưa mở để tìm ô đầu tiên bị ép buộc (forced verdict)."""
+        for var_id in unresolved_vars:
             verdict = self.evaluate_cell(var_id, current_cnf)
-            
             if verdict in ["CRIMINAL", "INNOCENT"]:
-                self.step_counter += 1
-                # Ghi nhận log quá trình (Deduction trace)
-                trace_log = {
-                    "step": self.step_counter,
-                    "target_var": var_id,
-                    "verdict": verdict,
-                    "metrics": {
+                # Chỉ ghi log nếu đang chạy Auto Solve (tránh việc click Hint cũng bị ghi vào trace)
+                if record_trace:
+                    self.step_counter += 1
+                    self.deduction_trace.append({
+                        "step": self.step_counter,
+                        "target_var": var_id,
+                        "verdict": verdict,
+                        "active_clues": active_clues or [],      # Lưu danh sách Clue đang dùng
+                        "sat_queries": 2,
+                        "sat_calls": self.solver.sat_calls,
                         "decisions": self.solver.decisions,
                         "propagations": self.solver.propagations,
-                        "runtime": round(self.solver.runtime, 4)
-                    }
-                }
-                self.deduction_trace.append(trace_log)
-                
-                # Chỉ trả về phán quyết CHẮC CHẮN đầu tiên tìm thấy
+                        "backtracks": self.solver.backtracks,
+                        "runtime": round(self.solver.runtime, 6),
+                        "newly_revealed_clue": None              # Chờ GameEngine điền thông tin sau
+                    })
                 return var_id, verdict
-                
-        # Nếu duyệt hết mà không có ô nào chắc chắn thì trả về UNKNOWN
+
         return None, "UNKNOWN"
+
+    def update_latest_revealed_clue(self, clue_description: str):
+        """Được gọi bởi GameEngine sau khi lật thẻ để ghi nhận clue mới vào trace."""
+        if self.deduction_trace:
+            self.deduction_trace[-1]["newly_revealed_clue"] = clue_description

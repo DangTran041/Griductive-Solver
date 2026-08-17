@@ -1,105 +1,124 @@
+"""
+logic/dpll.py
+--------------
+Bộ giải DPLL SAT Solver hoàn chỉnh.
+Bao gồm: Unit Propagation, Conflict Detection, Backtracking, và ghi nhận metrics thực nghiệm (cộng dồn).
+"""
+
 import time
 import copy
+from typing import List, Dict, Tuple, Optional
+
+Clause = List[int]
+CNF = List[Clause]
+Assignment = Dict[int, bool]
+
 
 class DPLLSolver:
     def __init__(self):
-        # Biến thống kê thực nghiệm (Phục vụ phần ghi report và làm video của Đăng)
+        # Không reset trong solve() để cộng dồn cho toàn bộ vòng đời của Solver (một màn chơi)
         self.decisions = 0
         self.propagations = 0
         self.backtracks = 0
+        self.sat_calls = 0       # Thêm biến đếm số lần gọi SAT theo yêu cầu 4.5
         self.runtime = 0.0
 
-    def solve(self, cnf_clauses, primary_vars=None):
+    def solve(self, cnf_clauses: CNF, primary_vars: Optional[List[int]] = None) -> Tuple[bool, Assignment]:
         """
-        Phụ trách: Khởi tạo và gọi thuật toán DPLL đệ quy.
+        Khởi tạo và giải bài toán SAT bằng DPLL.
+        Trả về (is_sat, assignment_dict).
         """
-        self.decisions = 0
-        self.propagations = 0
-        self.backtracks = 0
+        self.sat_calls += 1      # Tăng biến đếm mỗi khi gọi
         start_time = time.time()
         
-        # Bắt đầu giải với bộ nhớ gán (assignment) trống
-        result, model = self._dpll(cnf_clauses, {})
+        # Deepcopy để không ảnh hưởng dữ liệu gốc
+        working_clauses = copy.deepcopy(cnf_clauses)
+        is_sat, model = self._dpll(working_clauses, {})
         
-        self.runtime = time.time() - start_time
-        return result, model
+        self.runtime += (time.time() - start_time)  # Cộng dồn thời gian chạy
+        return is_sat, model
 
-    def _unit_propagation(self, clauses, assignment):
+    def _unit_propagation(self, clauses: CNF, assignment: Assignment) -> Tuple[Optional[CNF], Assignment]:
         """
-        Phụ trách: Tìm các mệnh đề đơn (Unit Clause) và lan truyền logic để rút gọn CNF.
+        Tìm kiếm các mệnh đề đơn vị (Unit Clause) và lan truyền giá trị.
+        Trả về (clauses_đã_rút_gọn, assignment_mới).
+        Nếu phát hiện mâu thuẫn -> trả về (None, assignment).
         """
         new_clauses = copy.deepcopy(clauses)
-        unit_clauses = [c for c in new_clauses if len(c) == 1]
-        
-        while unit_clauses:
-            # Lấy literal duy nhất trong mệnh đề đơn đầu tiên
-            unit = unit_clauses[0][0]
+        new_assignment = copy.deepcopy(assignment)
+
+        while True:
+            unit = None
+            for c in new_clauses:
+                if len(c) == 1:
+                    unit = c[0]
+                    break
+
+            if unit is None:
+                break
+
             self.propagations += 1
-            
-            # Gán giá trị: Nếu unit > 0 -> True, ngược lại -> False
-            assignment[abs(unit)] = (unit > 0)
-            
-            next_clauses = []
+            var = abs(unit)
+            val = (unit > 0)
+
+            if var in new_assignment and new_assignment[var] != val:
+                return None, new_assignment
+
+            new_assignment[var] = val
+
+            simplified_clauses = []
             for clause in new_clauses:
-                # 1. Mệnh đề chứa unit literal -> Đã đúng, loại bỏ khỏi danh sách
                 if unit in clause:
                     continue
-                
-                # 2. Mệnh đề chứa phủ định của unit literal -> Xóa literal đó đi
                 neg_unit = -unit
                 if neg_unit in clause:
-                    new_clause = [l for l in clause if l != neg_unit]
-                    next_clauses.append(new_clause)
+                    new_c = [l for l in clause if l != neg_unit]
+                    if len(new_c) == 0:
+                        return None, new_assignment
+                    simplified_clauses.append(new_c)
                 else:
-                    next_clauses.append(clause)
-                    
-            new_clauses = next_clauses
-            # Cập nhật lại danh sách mệnh đề đơn sau khi rút gọn
-            unit_clauses = [c for c in new_clauses if len(c) == 1]
-            
-        return new_clauses, assignment
+                    simplified_clauses.append(clause)
 
-    def _dpll(self, clauses, assignment):
+            new_clauses = simplified_clauses
+
+        return new_clauses, new_assignment
+
+    def _dpll(self, clauses: CNF, assignment: Assignment) -> Tuple[bool, Assignment]:
         """
-        Phụ trách: Vòng lặp đệ quy cốt lõi của DPLL (Tìm mâu thuẫn -> Chọn biến -> Rẽ nhánh).
+        Vòng lặp đệ quy cốt lõi của DPLL.
         """
-        # Bước 1: Lan truyền Unit
-        clauses, assignment = self._unit_propagation(clauses, assignment)
+        simplified_clauses, assignment = self._unit_propagation(clauses, assignment)
         
-        # Bước 2: Conflict Detection (Kiểm tra điều kiện dừng)
-        # Nếu không còn mệnh đề nào -> Tất cả đã được thỏa mãn
-        if not clauses:
-            return True, assignment
-        # Nếu xuất hiện mệnh đề rỗng -> Gặp mâu thuẫn (UNSAT)
-        if any(len(c) == 0 for c in clauses):
+        if simplified_clauses is None:
             return False, {}
-            
-        # Bước 3: Deterministic variable selection (Chọn biến chưa gán)
+
+        if len(simplified_clauses) == 0:
+            return True, assignment
+
         unassigned_var = None
-        for clause in clauses:
-            for literal in clause:
-                var = abs(literal)
-                if var not in assignment:
-                    unassigned_var = var
+        for c in simplified_clauses:
+            for lit in c:
+                v = abs(lit)
+                if v not in assignment:
+                    unassigned_var = v
                     break
-            if unassigned_var:
+            if unassigned_var is not None:
                 break
-                
-        # Bước 4: Rẽ nhánh và Quay lui (Branching & Backtracking)
+
+        if unassigned_var is None:
+            return True, assignment
+
         self.decisions += 1
-        
-        # Nhánh 1: Giả sử unassigned_var là TRUE (Thêm mệnh đề [unassigned_var])
-        result, model = self._dpll(clauses + [[unassigned_var]], assignment.copy())
-        if result:
+        branch_true_clauses = copy.deepcopy(simplified_clauses) + [[unassigned_var]]
+        is_sat, model = self._dpll(branch_true_clauses, copy.deepcopy(assignment))
+        if is_sat:
             return True, model
-            
-        # Quay lui
+
         self.backtracks += 1
         self.decisions += 1
-        
-        # Nhánh 2: Giả sử unassigned_var là FALSE (Thêm mệnh đề [-unassigned_var])
-        result, model = self._dpll(clauses + [[-unassigned_var]], assignment.copy())
-        if result:
+        branch_false_clauses = copy.deepcopy(simplified_clauses) + [[-unassigned_var]]
+        is_sat, model = self._dpll(branch_false_clauses, copy.deepcopy(assignment))
+        if is_sat:
             return True, model
-            
+
         return False, {}
