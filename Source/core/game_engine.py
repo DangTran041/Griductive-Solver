@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 from logic.cnf_encoder import CNFEncoder, _parse_cell_id
 from logic.agent import LogicAgent
+from logic.dpll import DPLLSolver
 
 
 class Clue:
@@ -215,6 +216,85 @@ class GameEngine:
                 break  # Không thể suy luận thêm ô nào nữa
 
         return solved_count
+
+    def check_uniqueness(self):
+        """Kiểm tra bộ clue đầy đủ có dẫn tới đúng 1 lời giải duy nhất không.
+
+        Thuật toán (tối đa 2 SAT calls):
+        1. Encode TẤT CẢ clue → CNF (mọi owner đều revealed).
+        2. solve() lần 1: UNSAT → INCONSISTENT.
+        3. Tạo blocking clause phủ định model 1, thêm vào CNF.
+        4. solve() lần 2: UNSAT → UNIQUE, SAT → NOT_UNIQUE.
+
+        Returns
+        -------
+        dict:
+            status        – "INCONSISTENT" | "UNIQUE" | "NOT_UNIQUE"
+            model         – lời giải 1 {cell_id: "CRIMINAL"/"INNOCENT"}, hoặc None
+            second_model  – lời giải 2 nếu NOT_UNIQUE, ngược lại None
+            num_sat_calls – số lần gọi solve() (1 hoặc 2)
+        """
+        encoder = CNFEncoder(self.raw_puzzle_data)
+        raw_clues = self.raw_puzzle_data.get("clues", {})
+        all_owners = list(raw_clues.keys())
+
+        cnf, stats = encoder.encode(raw_clues, revealed_ids=all_owners)
+        var_map = stats["var_map"]
+        num_primary = stats["num_primary_vars"]
+        inv_map = {v: k for k, v in var_map.items()}
+
+        solver = DPLLSolver()
+        num_sat_calls = 0
+
+        # ── SAT call 1 ──
+        sat1, raw_model1 = solver.solve(cnf)
+        num_sat_calls += 1
+
+        if not sat1:
+            return {
+                "status": "INCONSISTENT",
+                "model": None,
+                "second_model": None,
+                "num_sat_calls": num_sat_calls,
+            }
+
+        model1 = {
+            inv_map[vi]: "CRIMINAL" if val else "INNOCENT"
+            for vi, val in raw_model1.items() if vi in inv_map
+        }
+
+        # ── Blocking clause (phủ định model 1 trên primary vars) ──
+        blocking = []
+        for vi in range(1, num_primary + 1):
+            if vi in raw_model1:
+                blocking.append(-vi if raw_model1[vi] else vi)
+            else:
+                blocking.append(vi)
+        cnf.append(blocking)
+
+        # ── SAT call 2 ──
+        sat2, raw_model2 = solver.solve(cnf)
+        num_sat_calls += 1
+
+        if not sat2:
+            return {
+                "status": "UNIQUE",
+                "model": model1,
+                "second_model": None,
+                "num_sat_calls": num_sat_calls,
+            }
+
+        model2 = {
+            inv_map[vi]: "CRIMINAL" if val else "INNOCENT"
+            for vi, val in raw_model2.items() if vi in inv_map
+        }
+
+        return {
+            "status": "NOT_UNIQUE",
+            "model": model1,
+            "second_model": model2,
+            "num_sat_calls": num_sat_calls,
+        }
 
     def get_public_view(self):
         return {
