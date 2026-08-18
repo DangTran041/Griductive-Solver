@@ -1,0 +1,488 @@
+{
+  "id": "stage_5x5_01",
+  "grid_size": 5,
+  "characters": [
+    {
+      "id": "A1",
+      "row": 0,
+      "col": 0,
+      "name": "Abel",
+      "profession": "Guard"
+    },
+    {
+      "id": "B1",
+      "row": 0,
+      "col": 1,
+      "name": "Bea",
+      "profession": "Cook"
+    },
+    {
+      "id": "C1",
+      "row": 0,
+      "col": 2,
+      "name": "Clara",
+      "profession": "Farmer"
+    },
+    {
+      "id": "D1",
+      "row": 0,
+      "col": 3,
+      "name": "Derek",
+      "profession": "Clerk"
+    },
+    {
+      "id": "E1",
+      "row": 0,
+      "col": 4,
+      "name": "Eliza",
+      "profession": "Detective"
+    },
+    {
+      "id": "A2",
+      "row": 1,
+      "col": 0,
+      "name": "Franz",
+      "profession": "Doctor"
+    },
+    {
+      "id": "B2",
+      "row": 1,
+      "col": 1,
+      "name": "Grant",
+      "profession": "Artist"
+    },
+    {
+      "id": "C2",
+      "row": 1,
+      "col": 2,
+      "name": "Hannah",
+      "profession": "Pilot"
+    },
+    {
+      "id": "D2",
+      "row": 1,
+      "col": 3,
+      "name": "Ivy",
+      "profession": "Astronaut"
+    },
+    {
+      "id": "E2",
+      "row": 1,
+      "col": 4,
+      "name": "Jonas",
+      "profession": "Painter"
+    },
+    {
+      "id": "A3",
+      "row": 2,
+      "col": 0,
+      "name": "Karl",
+      "profession": "Guard"
+    },
+    {
+      "id": "B3",
+      "row": 2,
+      "col": 1,
+      "name": "Leo",
+      "profession": "Cook"
+    },
+    {
+      "id": "C3",
+      "row": 2,
+      "col": 2,
+      "name": "Mara",
+      "profession": "Farmer"
+    },
+    {
+      "id": "D3",
+      "row": 2,
+      "col": 3,
+      "name": "Noah",
+      "profession": "Clerk"
+    },
+    {
+      "id": "E3",
+      "row": 2,
+      "col": 4,
+      "name": "Owen",
+      "profession": "Detective"
+    },
+    {
+      "id": "A4",
+      "row": 3,
+      "col": 0,
+      "name": "Priya",
+      "profession": "Doctor"
+    },
+    {
+      "id": "B4",
+      "row": 3,
+      "col": 1,
+      "name": "Quilla",
+      "profession": "Artist"
+    },
+    {
+      "id": "C4",
+      "row": 3,
+      "col": 2,
+      "name": "Roy",
+      "profession": "Pilot"
+    },
+    {
+      "id": "D4",
+      "row": 3,
+      "col": 3,
+      "name": "Sophia",
+      "profession": "Astronaut"
+    },
+    {
+      "id": "E4",
+      "row": 3,
+      "col": 4,
+      "name": "Tom",
+      "profession": "Painter"
+    },
+    {
+      "id": "A5",
+      "row": 4,
+      "col": 0,
+      "name": "Uma",
+      "profession": "Guard"
+    },
+    {
+      "id": "B5",
+      "row": 4,
+      "col": 1,
+      "name": "Vic",
+      "profession": "Cook"
+    },
+    {
+      "id": "C5",
+      "row": 4,
+      "col": 2,
+      "name": "Wren",
+      "profession": "Farmer"
+    },
+    {
+      "id": "D5",
+      "row": 4,
+      "col": 3,
+      "name": "Xena",
+      "profession": "Clerk"
+    },
+    {
+      "id": "E5",
+      "row": 4,
+      "col": 4,
+      "name": "Yara",
+      "profession": "Detective"
+    }
+  ],
+  "solution": {
+    "A1": "CRIMINAL",
+    "B1": "CRIMINAL",
+    "C1": "INNOCENT",
+    "D1": "CRIMINAL",
+    "E1": "INNOCENT",
+    "A2": "CRIMINAL",
+    "B2": "CRIMINAL",
+    "C2": "INNOCENT",
+    "D2": "CRIMINAL",
+    "E2": "CRIMINAL",
+    "A3": "CRIMINAL",
+    "B3": "CRIMINAL",
+    "C3": "CRIMINAL",
+    "D3": "INNOCENT",
+    "E3": "CRIMINAL",
+    "A4": "CRIMINAL",
+    "B4": "INNOCENT",
+    "C4": "INNOCENT",
+    "D4": "INNOCENT",
+    "E4": "CRIMINAL",
+    "A5": "INNOCENT",
+    "B5": "CRIMINAL",
+    "C5": "INNOCENT",
+    "D5": "CRIMINAL",
+    "E5": "CRIMINAL"
+  },
+  "clues": {
+    "A1": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "B1"
+        ]
+      },
+      "value": "CRIMINAL",
+      "description": "B1 is CRIMINAL"
+    },
+    "B1": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "C1"
+        ]
+      },
+      "value": "INNOCENT",
+      "description": "C1 is INNOCENT"
+    },
+    "C1": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "D1"
+        ]
+      },
+      "value": "CRIMINAL",
+      "description": "D1 is CRIMINAL"
+    },
+    "D1": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "E1"
+        ]
+      },
+      "value": "INNOCENT",
+      "description": "E1 is INNOCENT"
+    },
+    "E1": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "A2"
+        ]
+      },
+      "value": "CRIMINAL",
+      "description": "A2 is CRIMINAL"
+    },
+    "A2": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "B2"
+        ]
+      },
+      "value": "CRIMINAL",
+      "description": "B2 is CRIMINAL"
+    },
+    "B2": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "C2"
+        ]
+      },
+      "value": "INNOCENT",
+      "description": "C2 is INNOCENT"
+    },
+    "C2": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "D2"
+        ]
+      },
+      "value": "CRIMINAL",
+      "description": "D2 is CRIMINAL"
+    },
+    "D2": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "E2"
+        ]
+      },
+      "value": "CRIMINAL",
+      "description": "E2 is CRIMINAL"
+    },
+    "E2": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "A3"
+        ]
+      },
+      "value": "CRIMINAL",
+      "description": "A3 is CRIMINAL"
+    },
+    "A3": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "B3"
+        ]
+      },
+      "value": "CRIMINAL",
+      "description": "B3 is CRIMINAL"
+    },
+    "B3": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "C3"
+        ]
+      },
+      "value": "CRIMINAL",
+      "description": "C3 is CRIMINAL"
+    },
+    "C3": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "D3"
+        ]
+      },
+      "value": "INNOCENT",
+      "description": "D3 is INNOCENT"
+    },
+    "D3": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "E3"
+        ]
+      },
+      "value": "CRIMINAL",
+      "description": "E3 is CRIMINAL"
+    },
+    "E3": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "A4"
+        ]
+      },
+      "value": "CRIMINAL",
+      "description": "A4 is CRIMINAL"
+    },
+    "A4": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "B4"
+        ]
+      },
+      "value": "INNOCENT",
+      "description": "B4 is INNOCENT"
+    },
+    "B4": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "C4"
+        ]
+      },
+      "value": "INNOCENT",
+      "description": "C4 is INNOCENT"
+    },
+    "C4": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "D4"
+        ]
+      },
+      "value": "INNOCENT",
+      "description": "D4 is INNOCENT"
+    },
+    "D4": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "E4"
+        ]
+      },
+      "value": "CRIMINAL",
+      "description": "E4 is CRIMINAL"
+    },
+    "E4": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "A5"
+        ]
+      },
+      "value": "INNOCENT",
+      "description": "A5 is INNOCENT"
+    },
+    "A5": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "B5"
+        ]
+      },
+      "value": "CRIMINAL",
+      "description": "B5 is CRIMINAL"
+    },
+    "B5": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "C5"
+        ]
+      },
+      "value": "INNOCENT",
+      "description": "C5 is INNOCENT"
+    },
+    "C5": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "D5"
+        ]
+      },
+      "value": "CRIMINAL",
+      "description": "D5 is CRIMINAL"
+    },
+    "D5": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "E5"
+        ]
+      },
+      "value": "CRIMINAL",
+      "description": "E5 is CRIMINAL"
+    },
+    "E5": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "A1"
+        ]
+      },
+      "value": "CRIMINAL",
+      "description": "A1 is CRIMINAL"
+    }
+  },
+  "initial_revealed": [
+    "A1"
+  ]
+}

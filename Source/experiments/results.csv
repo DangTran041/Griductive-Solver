@@ -1,5 +1,7 @@
 ﻿stage_id,grid_size,num_primary_vars,num_aux_vars,num_clauses,sat_calls,decisions,propagations,backtracks,deduction_steps,runtime_seconds,solved,uniqueness_status,uniqueness_sat_calls,note
-stage_3x3_01,3,9,0,14,16,1,93,0,8,0.003309,True,UNIQUE,2,Da giai duoc 8 o
-stage_3x3_02,3,9,0,9,16,0,80,0,8,0.001467,True,UNIQUE,2,Da giai duoc 8 o
-stage_4x4_01,4,16,0,16,30,0,255,0,15,0.004096,True,UNIQUE,2,Da giai duoc 15 o
-stage_5x5_stress,5,25,0,25,48,0,624,0,24,0.009734,True,UNIQUE,2,Da giai duoc 24 o
+stage_3x3_01,3,9,0,14,16,1,93,0,8,0.003851,True,UNIQUE,2,Da giai duoc 8 o
+stage_3x3_02,3,9,0,9,16,0,80,0,8,0.002543,True,UNIQUE,2,Da giai duoc 8 o
+stage_4x4_01,4,16,0,16,30,0,255,0,15,0.006166,True,UNIQUE,2,Da giai duoc 15 o
+stage_4x4_02,4,16,0,16,30,0,255,0,15,0.009315,True,UNIQUE,2,Da giai duoc 15 o
+stage_5x5_01,5,25,0,25,48,0,624,0,24,0.014374,True,UNIQUE,2,Da giai duoc 24 o
+stage_5x5_02,5,25,0,25,48,0,624,0,24,0.017135,True,UNIQUE,2,Da giai duoc 24 o
