@@ -2,76 +2,177 @@
   "id": "stage_3x3_01",
   "grid_size": 3,
   "characters": [
-    { "id": "A1", "row": 0, "col": 0, "name": "Abel",   "profession": "Guard" },
-    { "id": "B1", "row": 0, "col": 1, "name": "Bea",     "profession": "Cook" },
-    { "id": "C1", "row": 0, "col": 2, "name": "Clara",   "profession": "Farmer" },
-    { "id": "A2", "row": 1, "col": 0, "name": "Derek",   "profession": "Clerk" },
-    { "id": "B2", "row": 1, "col": 1, "name": "Eliza",   "profession": "Detective" },
-    { "id": "C2", "row": 1, "col": 2, "name": "Franz",   "profession": "Guard" },
-    { "id": "A3", "row": 2, "col": 0, "name": "Grant",   "profession": "Doctor" },
-    { "id": "B3", "row": 2, "col": 1, "name": "Hannah",  "profession": "Artist" },
-    { "id": "C3", "row": 2, "col": 2, "name": "Ivy",     "profession": "Pilot" }
+    {
+      "id": "A1",
+      "row": 0,
+      "col": 0,
+      "name": "Abel",
+      "profession": "Guard"
+    },
+    {
+      "id": "B1",
+      "row": 0,
+      "col": 1,
+      "name": "Bea",
+      "profession": "Cook"
+    },
+    {
+      "id": "C1",
+      "row": 0,
+      "col": 2,
+      "name": "Clara",
+      "profession": "Farmer"
+    },
+    {
+      "id": "A2",
+      "row": 1,
+      "col": 0,
+      "name": "Derek",
+      "profession": "Clerk"
+    },
+    {
+      "id": "B2",
+      "row": 1,
+      "col": 1,
+      "name": "Eliza",
+      "profession": "Detective"
+    },
+    {
+      "id": "C2",
+      "row": 1,
+      "col": 2,
+      "name": "Franz",
+      "profession": "Guard"
+    },
+    {
+      "id": "A3",
+      "row": 2,
+      "col": 0,
+      "name": "Grant",
+      "profession": "Doctor"
+    },
+    {
+      "id": "B3",
+      "row": 2,
+      "col": 1,
+      "name": "Hannah",
+      "profession": "Artist"
+    },
+    {
+      "id": "C3",
+      "row": 2,
+      "col": 2,
+      "name": "Ivy",
+      "profession": "Pilot"
+    }
   ],
   "solution": {
-    "A1": "INNOCENT", "B1": "INNOCENT", "C1": "INNOCENT",
-    "A2": "CRIMINAL", "B2": "INNOCENT", "C2": "CRIMINAL",
-    "A3": "INNOCENT", "B3": "CRIMINAL", "C3": "INNOCENT"
+    "A1": "INNOCENT",
+    "B1": "INNOCENT",
+    "C1": "INNOCENT",
+    "A2": "CRIMINAL",
+    "B2": "INNOCENT",
+    "C2": "CRIMINAL",
+    "A3": "INNOCENT",
+    "B3": "CRIMINAL",
+    "C3": "INNOCENT"
   },
   "clues": {
     "A1": {
       "type": "EXACTLY",
-      "region": { "kind": "row", "row": 0 },
+      "region": {
+        "kind": "row",
+        "row": 0
+      },
       "k": 0,
       "description": "No Criminal in Row 1"
     },
     "B1": {
       "type": "FACT",
-      "region": { "kind": "explicit", "cells": ["A2"] },
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "A2"
+        ]
+      },
       "value": "CRIMINAL",
       "description": "A2 is Criminal"
     },
     "C1": {
       "type": "EXACTLY",
-      "region": { "kind": "row", "row": 1 },
+      "region": {
+        "kind": "row",
+        "row": 1
+      },
       "k": 2,
       "description": "Exactly 2 Criminals in Row 2"
     },
     "A2": {
       "type": "FACT",
-      "region": { "kind": "explicit", "cells": ["B2"] },
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "B2"
+        ]
+      },
       "value": "INNOCENT",
       "description": "B2 is Innocent"
     },
     "B2": {
       "type": "FACT",
-      "region": { "kind": "explicit", "cells": ["C2"] },
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "C2"
+        ]
+      },
       "value": "CRIMINAL",
       "description": "C2 is Criminal"
     },
     "C2": {
       "type": "FACT",
-      "region": { "kind": "explicit", "cells": ["A3"] },
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "A3"
+        ]
+      },
       "value": "INNOCENT",
       "description": "A3 is Innocent"
     },
     "A3": {
       "type": "FACT",
-      "region": { "kind": "explicit", "cells": ["B3"] },
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "B3"
+        ]
+      },
       "value": "CRIMINAL",
       "description": "B3 is Criminal"
     },
     "B3": {
       "type": "FACT",
-      "region": { "kind": "explicit", "cells": ["C3"] },
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "C3"
+        ]
+      },
       "value": "INNOCENT",
       "description": "C3 is Innocent"
     },
     "C3": {
       "type": "AT_MOST",
-      "region": { "kind": "neighbors", "of": "C3" },
-      "k": 1,
-      "description": "At most 1 Criminal among C3's neighbors"
+      "region": {
+        "kind": "neighbors",
+        "of": "C3"
+      },
+      "k": 2,
+      "description": "At most 2 Criminal(s) among C3's neighbors"
     }
   },
-  "initial_revealed": ["A1"]
+  "initial_revealed": [
+    "A1"
+  ]
 }

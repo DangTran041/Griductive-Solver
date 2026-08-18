@@ -4,6 +4,11 @@ core/game_engine.py
 Game Engine cho Griductive.
 Tích hợp LogicAgent và CNFEncoder để thực hiện suy luận logic chính xác,
 lưu trữ deduction trace chuẩn theo yêu cầu đồ án.
+
+QUY TẮC TÁCH BẠCH (mục 4.1 đề bài): mọi lời gọi tới CNFEncoder/LogicAgent
+CHỈ được truyền dữ liệu qua self._public_view() — dữ liệu này đã lọc bỏ
+hoàn toàn 'solution'. TUYỆT ĐỐI KHÔNG truyền self.raw_puzzle_data thẳng
+vào CNFEncoder/LogicAgent ở bất kỳ đâu, vì nó chứa đáp án thật.
 """
 
 import json
@@ -31,7 +36,10 @@ class GameEngine:
         self.initial_revealed = []   # list[(row, col)]
         self.public_kb = {}          # (row, col) -> "CRIMINAL"/"INNOCENT" [PUBLIC]
         self.source_path = None
-        self.raw_puzzle_data = None  # Lưu trữ dữ liệu thô để dùng cho CNFEncoder
+        self.raw_puzzle_data = None  # Dữ liệu thô ĐẦY ĐỦ (CÓ 'solution') — CHỈ Engine
+                                      # dùng nội bộ để load. KHÔNG BAO GIỜ truyền thẳng
+                                      # object này cho CNFEncoder/LogicAgent — dùng
+                                      # self._public_puzzle() ở mọi nơi khác thay thế.
         self.agent = None            # Sẽ được khởi tạo trong restart()
 
     @classmethod
@@ -96,7 +104,8 @@ class GameEngine:
         self.public_kb = {}
         for pos in self.initial_revealed:
             self.public_kb[pos] = self.solution[pos]
-        # Khởi tạo và lưu trữ agent cố định cho mỗi vòng chơi
+        # Agent cố định cho cả vòng chơi — để solver cộng dồn số liệu đúng
+        # (decisions/propagations/backtracks/sat_calls) suốt toàn bộ session.
         self.agent = LogicAgent()
 
     def _pos_label(self, pos):
@@ -106,30 +115,41 @@ class GameEngine:
     def _cid_to_pos(self, cid):
         return _parse_cell_id(cid)
 
+    # ------------------------------------------------------------------
+    # NGUỒN DỮ LIỆU DUY NHẤT được phép đưa cho CNFEncoder / LogicAgent.
+    # Lọc bỏ hoàn toàn 'solution' — không có cách nào Encoder/Agent với
+    # tới được đáp án thật thông qua hàm này.
+    # ------------------------------------------------------------------
+    def _public_puzzle(self):
+        return {
+            "grid_size": self.raw_puzzle_data["grid_size"],
+            "characters": self.raw_puzzle_data["characters"],
+            "clues": self.raw_puzzle_data["clues"],
+            # cố ý KHÔNG có "solution"
+        }
+
     def _build_cnf_and_vars(self):
-        encoder = CNFEncoder(self.raw_puzzle_data)
-        
-        # Lấy danh sách ID các ô đã lật và trạng thái hiện tại
+        encoder = CNFEncoder(self._public_puzzle())
+
         revealed_ids = [self._pos_label(pos) for pos in self.public_kb.keys()]
         known_statuses = {self._pos_label(pos): status for pos, status in self.public_kb.items()}
-        
-        raw_clues = self.raw_puzzle_data.get("clues", {})
-        cnf, stats = encoder.encode(raw_clues, revealed_ids, known_statuses)
-        
-        var_map = stats["var_map"]                # cid -> var_id (int)
-        rev_var_map = {v: k for k, v in var_map.items()}  # var_id -> cid
-        
-        return encoder, cnf, var_map, rev_var_map
+
+        public_clues = self._public_puzzle()["clues"]
+        cnf, stats = encoder.encode(public_clues, revealed_ids, known_statuses)
+
+        var_map = stats["var_map"]
+        rev_var_map = {v: k for k, v in var_map.items()}
+
+        return encoder, cnf, stats, var_map, rev_var_map
 
     def _check_forced_status(self, pos):
-        encoder, cnf, var_map, rev_var_map = self._build_cnf_and_vars()
+        encoder, cnf, stats, var_map, rev_var_map = self._build_cnf_and_vars()
         target_cid = self._pos_label(pos)
-        
+
         if target_cid not in var_map:
             return None
 
         var_id = var_map[target_cid]
-        # Dùng lại self.agent thay vì khởi tạo mới
         verdict = self.agent.evaluate_cell(var_id, cnf)
 
         if verdict in ["CRIMINAL", "INNOCENT"]:
@@ -158,15 +178,14 @@ class GameEngine:
         return "ACCEPTED", f"CHÍNH XÁC!\n{self.characters[pos]['name']} là {forced_status}."
 
     def get_hint(self):
-        encoder, cnf, var_map, rev_var_map = self._build_cnf_and_vars()
-        
+        encoder, cnf, stats, var_map, rev_var_map = self._build_cnf_and_vars()
+
         unresolved_vars = []
         for cid, var_id in var_map.items():
             pos = self._cid_to_pos(cid)
             if pos not in self.public_kb:
                 unresolved_vars.append(var_id)
 
-        # Gọi agent có sẵn nhưng truyền record_trace=False để không làm rác log
         target_var, verdict = self.agent.get_forced_verdict(unresolved_vars, cnf, record_trace=False)
 
         if target_var is not None and verdict in ["CRIMINAL", "INNOCENT"]:
@@ -181,7 +200,7 @@ class GameEngine:
                 "verdict": verdict,
                 "message": f"GỢI Ý: Ô {target_cid} ({char_name}) chắc chắn phải là {verdict}!"
             }
-        
+
         return {
             "has_hint": False,
             "pos": None,
@@ -194,11 +213,10 @@ class GameEngine:
         solved_count = 0
 
         while True:
-            encoder, cnf, var_map, rev_var_map = self._build_cnf_and_vars()
-            
-            # Lấy danh sách các clue đang mở để truyền vào Trace
+            encoder, cnf, stats, var_map, rev_var_map = self._build_cnf_and_vars()
+
             active_clues = [self._pos_label(pos) for pos in self.public_kb.keys()]
-            
+
             unresolved_vars = []
             for cid, var_id in var_map.items():
                 pos = self._cid_to_pos(cid)
@@ -206,9 +224,8 @@ class GameEngine:
                     unresolved_vars.append(var_id)
 
             if not unresolved_vars:
-                break  # Đã mở hết tất cả các ô trên bàn cờ
+                break
 
-            # Kích hoạt record_trace=True để lưu log
             target_var, verdict = self.agent.get_forced_verdict(
                 unresolved_vars, cnf, active_clues=active_clues, record_trace=True
             )
@@ -216,17 +233,15 @@ class GameEngine:
             if target_var is not None and verdict in ["CRIMINAL", "INNOCENT"]:
                 target_cid = rev_var_map[target_var]
                 target_pos = self._cid_to_pos(target_cid)
-                
-                # Cập nhật phán quyết vào KB công khai
+
                 self.public_kb[target_pos] = verdict
                 solved_count += 1
-                
-                # Bổ sung thông tin clue mới lật vào Trace
+
                 new_clue = self.clues.get(target_pos)
                 new_clue_desc = new_clue.description if new_clue else "Không có nội dung clue"
                 self.agent.update_latest_revealed_clue(f"{target_cid} -> {new_clue_desc}")
             else:
-                break  # Không thể suy luận thêm ô nào nữa
+                break
 
         return solved_count
 
@@ -238,20 +253,12 @@ class GameEngine:
         2. solve() lần 1: UNSAT → INCONSISTENT.
         3. Tạo blocking clause phủ định model 1, thêm vào CNF.
         4. solve() lần 2: UNSAT → UNIQUE, SAT → NOT_UNIQUE.
-
-        Returns
-        -------
-        dict:
-            status        – "INCONSISTENT" | "UNIQUE" | "NOT_UNIQUE"
-            model         – lời giải 1 {cell_id: "CRIMINAL"/"INNOCENT"}, hoặc None
-            second_model  – lời giải 2 nếu NOT_UNIQUE, ngược lại None
-            num_sat_calls – số lần gọi solve() (1 hoặc 2)
         """
-        encoder = CNFEncoder(self.raw_puzzle_data)
-        raw_clues = self.raw_puzzle_data.get("clues", {})
-        all_owners = list(raw_clues.keys())
+        encoder = CNFEncoder(self._public_puzzle())
+        public_clues = self._public_puzzle()["clues"]
+        all_owners = list(public_clues.keys())
 
-        cnf, stats = encoder.encode(raw_clues, revealed_ids=all_owners)
+        cnf, stats = encoder.encode(public_clues, revealed_ids=all_owners)
         var_map = stats["var_map"]
         num_primary = stats["num_primary_vars"]
         inv_map = {v: k for k, v in var_map.items()}
@@ -259,7 +266,6 @@ class GameEngine:
         solver = DPLLSolver()
         num_sat_calls = 0
 
-        # ── SAT call 1 ──
         sat1, raw_model1 = solver.solve(cnf)
         num_sat_calls += 1
 
@@ -276,7 +282,6 @@ class GameEngine:
             for vi, val in raw_model1.items() if vi in inv_map
         }
 
-        # ── Blocking clause (phủ định model 1 trên primary vars) ──
         blocking = []
         for vi in range(1, num_primary + 1):
             if vi in raw_model1:
@@ -285,7 +290,6 @@ class GameEngine:
                 blocking.append(vi)
         cnf.append(blocking)
 
-        # ── SAT call 2 ──
         sat2, raw_model2 = solver.solve(cnf)
         num_sat_calls += 1
 
@@ -310,10 +314,19 @@ class GameEngine:
         }
 
     def get_public_view(self):
+        """Trả về đúng những gì Logic Agent được phép thấy — KHÔNG có 'solution'."""
         return {
             "grid_size": self.grid_size,
-            "revealed": dict(self.public_kb),
+            "characters": [
+                {"id": self._pos_label(pos), "row": pos[0], "col": pos[1]}
+                for pos in self.characters
+            ],
+            "revealed": {
+                self._pos_label(pos): status for pos, status in self.public_kb.items()
+            },
             "revealed_clues": {
-                pos: self.clues[pos] for pos in self.public_kb if pos in self.clues
+                self._pos_label(pos): self.clues[pos]
+                for pos in self.public_kb
+                if pos in self.clues
             },
         }
