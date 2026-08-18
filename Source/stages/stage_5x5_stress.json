@@ -207,33 +207,94 @@
   },
   "clues": {
     "A1": {
-      "type": "EXACTLY",
+      "type": "FACT",
       "region": {
-        "kind": "row",
-        "row": 0
+        "kind": "explicit",
+        "cells": [
+          "B1"
+        ]
       },
-      "k": 3,
-      "description": "Exactly 3 Criminal(s) in Row 1"
+      "value": "CRIMINAL",
+      "description": "B1 is CRIMINAL"
     },
     "B1": {
-      "type": "AT_MOST",
+      "type": "FACT",
       "region": {
-        "kind": "column",
-        "col": 1
+        "kind": "explicit",
+        "cells": [
+          "C1"
+        ]
       },
-      "k": 4,
-      "description": "At most 4 Criminal(s) in Column B"
+      "value": "INNOCENT",
+      "description": "C1 is INNOCENT"
     },
     "C1": {
-      "type": "AT_LEAST",
+      "type": "FACT",
       "region": {
-        "kind": "neighbors",
-        "of": "C1"
+        "kind": "explicit",
+        "cells": [
+          "D1"
+        ]
       },
-      "k": 4,
-      "description": "At least 4 Criminal(s) among C1's neighbors"
+      "value": "CRIMINAL",
+      "description": "D1 is CRIMINAL"
     },
     "D1": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "E1"
+        ]
+      },
+      "value": "INNOCENT",
+      "description": "E1 is INNOCENT"
+    },
+    "E1": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "A2"
+        ]
+      },
+      "value": "CRIMINAL",
+      "description": "A2 is CRIMINAL"
+    },
+    "A2": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "B2"
+        ]
+      },
+      "value": "CRIMINAL",
+      "description": "B2 is CRIMINAL"
+    },
+    "B2": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "C2"
+        ]
+      },
+      "value": "INNOCENT",
+      "description": "C2 is INNOCENT"
+    },
+    "C2": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "D2"
+        ]
+      },
+      "value": "CRIMINAL",
+      "description": "D2 is CRIMINAL"
+    },
+    "D2": {
       "type": "FACT",
       "region": {
         "kind": "explicit",
@@ -243,57 +304,6 @@
       },
       "value": "CRIMINAL",
       "description": "E2 is CRIMINAL"
-    },
-    "E1": {
-      "type": "SAME",
-      "region": {
-        "kind": "explicit",
-        "cells": [
-          "E2",
-          "A1"
-        ]
-      },
-      "description": "E2 and A1 have the same status"
-    },
-    "A2": {
-      "type": "EXACTLY",
-      "region": {
-        "kind": "explicit",
-        "cells": [
-          "B3",
-          "C4",
-          "D5"
-        ]
-      },
-      "k": 2,
-      "description": "Exactly 2 Criminal(s) among B3, C4, D5"
-    },
-    "B2": {
-      "type": "EXACTLY",
-      "region": {
-        "kind": "row",
-        "row": 1
-      },
-      "k": 4,
-      "description": "Exactly 4 Criminal(s) in Row 2"
-    },
-    "C2": {
-      "type": "AT_MOST",
-      "region": {
-        "kind": "column",
-        "col": 2
-      },
-      "k": 1,
-      "description": "At most 1 Criminal(s) in Column C"
-    },
-    "D2": {
-      "type": "AT_LEAST",
-      "region": {
-        "kind": "neighbors",
-        "of": "D2"
-      },
-      "k": 4,
-      "description": "At least 4 Criminal(s) among D2's neighbors"
     },
     "E2": {
       "type": "FACT",
@@ -307,57 +317,116 @@
       "description": "A3 is CRIMINAL"
     },
     "A3": {
-      "type": "SAME",
+      "type": "FACT",
       "region": {
         "kind": "explicit",
         "cells": [
-          "A4",
           "B3"
         ]
       },
-      "description": "A4 and B3 have the same status"
+      "value": "CRIMINAL",
+      "description": "B3 is CRIMINAL"
     },
     "B3": {
-      "type": "EXACTLY",
+      "type": "FACT",
       "region": {
         "kind": "explicit",
         "cells": [
-          "C4",
-          "D5",
-          "E1"
+          "C3"
         ]
       },
-      "k": 1,
-      "description": "Exactly 1 Criminal(s) among C4, D5, E1"
+      "value": "CRIMINAL",
+      "description": "C3 is CRIMINAL"
     },
     "C3": {
-      "type": "EXACTLY",
+      "type": "FACT",
       "region": {
-        "kind": "row",
-        "row": 2
+        "kind": "explicit",
+        "cells": [
+          "D3"
+        ]
       },
-      "k": 4,
-      "description": "Exactly 4 Criminal(s) in Row 3"
+      "value": "INNOCENT",
+      "description": "D3 is INNOCENT"
     },
     "D3": {
-      "type": "AT_MOST",
+      "type": "FACT",
       "region": {
-        "kind": "column",
-        "col": 3
+        "kind": "explicit",
+        "cells": [
+          "E3"
+        ]
       },
-      "k": 3,
-      "description": "At most 3 Criminal(s) in Column D"
+      "value": "CRIMINAL",
+      "description": "E3 is CRIMINAL"
     },
     "E3": {
-      "type": "AT_LEAST",
+      "type": "FACT",
       "region": {
-        "kind": "neighbors",
-        "of": "E3"
+        "kind": "explicit",
+        "cells": [
+          "A4"
+        ]
       },
-      "k": 3,
-      "description": "At least 3 Criminal(s) among E3's neighbors"
+      "value": "CRIMINAL",
+      "description": "A4 is CRIMINAL"
     },
     "A4": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "B4"
+        ]
+      },
+      "value": "INNOCENT",
+      "description": "B4 is INNOCENT"
+    },
+    "B4": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "C4"
+        ]
+      },
+      "value": "INNOCENT",
+      "description": "C4 is INNOCENT"
+    },
+    "C4": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "D4"
+        ]
+      },
+      "value": "INNOCENT",
+      "description": "D4 is INNOCENT"
+    },
+    "D4": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "E4"
+        ]
+      },
+      "value": "CRIMINAL",
+      "description": "E4 is CRIMINAL"
+    },
+    "E4": {
+      "type": "FACT",
+      "region": {
+        "kind": "explicit",
+        "cells": [
+          "A5"
+        ]
+      },
+      "value": "INNOCENT",
+      "description": "A5 is INNOCENT"
+    },
+    "A5": {
       "type": "FACT",
       "region": {
         "kind": "explicit",
@@ -368,100 +437,49 @@
       "value": "CRIMINAL",
       "description": "B5 is CRIMINAL"
     },
-    "B4": {
-      "type": "DIFFERENT",
-      "region": {
-        "kind": "explicit",
-        "cells": [
-          "B5",
-          "C4"
-        ]
-      },
-      "description": "B5 and C4 have different status"
-    },
-    "C4": {
-      "type": "EXACTLY",
-      "region": {
-        "kind": "explicit",
-        "cells": [
-          "D5",
-          "E1",
-          "A2"
-        ]
-      },
-      "k": 2,
-      "description": "Exactly 2 Criminal(s) among D5, E1, A2"
-    },
-    "D4": {
-      "type": "EXACTLY",
-      "region": {
-        "kind": "row",
-        "row": 3
-      },
-      "k": 2,
-      "description": "Exactly 2 Criminal(s) in Row 4"
-    },
-    "E4": {
-      "type": "AT_MOST",
-      "region": {
-        "kind": "column",
-        "col": 4
-      },
-      "k": 4,
-      "description": "At most 4 Criminal(s) in Column E"
-    },
-    "A5": {
-      "type": "AT_LEAST",
-      "region": {
-        "kind": "neighbors",
-        "of": "A5"
-      },
-      "k": 2,
-      "description": "At least 2 Criminal(s) among A5's neighbors"
-    },
     "B5": {
       "type": "FACT",
       "region": {
         "kind": "explicit",
         "cells": [
-          "C1"
+          "C5"
         ]
       },
       "value": "INNOCENT",
-      "description": "C1 is INNOCENT"
+      "description": "C5 is INNOCENT"
     },
     "C5": {
-      "type": "DIFFERENT",
+      "type": "FACT",
       "region": {
         "kind": "explicit",
         "cells": [
-          "C1",
           "D5"
         ]
       },
-      "description": "C1 and D5 have different status"
+      "value": "CRIMINAL",
+      "description": "D5 is CRIMINAL"
     },
     "D5": {
-      "type": "EXACTLY",
+      "type": "FACT",
       "region": {
         "kind": "explicit",
         "cells": [
-          "E1",
-          "A2",
-          "B3"
+          "E5"
         ]
       },
-      "k": 2,
-      "description": "Exactly 2 Criminal(s) among E1, A2, B3"
+      "value": "CRIMINAL",
+      "description": "E5 is CRIMINAL"
     },
     "E5": {
-      "type": "EXACTLY",
+      "type": "FACT",
       "region": {
-        "kind": "row",
-        "row": 4
+        "kind": "explicit",
+        "cells": [
+          "A1"
+        ]
       },
-      "k": 3,
-      "description": "Exactly 3 Criminal(s) in Row 5"
+      "value": "CRIMINAL",
+      "description": "A1 is CRIMINAL"
     }
   },
   "initial_revealed": [

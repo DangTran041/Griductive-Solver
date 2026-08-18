@@ -1,5 +1,5 @@
-stage_id,grid_size,num_primary_vars,num_aux_vars,num_clauses,sat_calls,decisions,propagations,backtracks,deduction_steps,runtime_seconds,solved,note
-stage_3x3_01,3,9,0,16,16,1,93,0,8,0.000757,True,Đã giải được 8 ô
-stage_3x3_02,3,9,0,24,16,0,32,0,0,0.000117,False,Đã giải được 0 ô
-stage_4x4_01,4,16,0,73,30,42,244,0,4,0.001608,False,Đã giải được 4 ô
-stage_5x5_stress,5,25,0,191,48,92,280,0,0,0.002373,False,Đã giải được 0 ô
+﻿stage_id,grid_size,num_primary_vars,num_aux_vars,num_clauses,sat_calls,decisions,propagations,backtracks,deduction_steps,runtime_seconds,solved,uniqueness_status,uniqueness_sat_calls,note
+stage_3x3_01,3,9,0,14,16,1,93,0,8,0.003309,True,UNIQUE,2,Da giai duoc 8 o
+stage_3x3_02,3,9,0,9,16,0,80,0,8,0.001467,True,UNIQUE,2,Da giai duoc 8 o
+stage_4x4_01,4,16,0,16,30,0,255,0,15,0.004096,True,UNIQUE,2,Da giai duoc 15 o
+stage_5x5_stress,5,25,0,25,48,0,624,0,24,0.009734,True,UNIQUE,2,Da giai duoc 24 o
